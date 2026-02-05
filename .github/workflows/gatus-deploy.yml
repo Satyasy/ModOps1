@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: lks-oss-lb-1091177856.us-east-1.elb.amazonaws.com
+  ECR_REPOSITORY: lks-gatus
   ECS_CLUSTER: gatus-service
   TOKEN: ${{ secrets.TOKEN }}
 
