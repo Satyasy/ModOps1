@@ -66,7 +66,28 @@
           "protocol": "tcp"
         }
       ],
-      "secrets": [],
+      "secrets": [
+        {
+          "name": "LEAN_DB_HOST",
+          "valueFrom": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/host"
+        },
+        {
+          "name": "LEAN_DB_PORT",
+          "valueFrom": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/port"
+        },
+        {
+          "name": "LEAN_DB_DATABASE",
+          "valueFrom": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/name"
+        },
+        {
+          "name": "LEAN_DB_USER",
+          "valueFrom": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/username"
+        },
+        {
+          "name": "LEAN_DB_PASSWORD",
+          "valueFrom": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/password"
+        }
+      ],
       "environment": [
         {
           "name": "LEAN_SITENAME",
@@ -77,38 +98,25 @@
           "value": "Asia/Jakarta"
         },
         {
-          "name": "LEAN_DB_HOST",
-          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/host"
-        },
-        {
-          "name": "LEAN_DB_PORT",
-          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/port"
-        },
-        {
-          "name": "LEAN_DB_DATABASE",
-          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/name"
-        },
-        {
-          "name": "LEAN_DB_USER",
-          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/username"
-        },
-        {
-          "name": "LEAN_DB_PASSWORD",
-          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/password"
+          "name": "LEAN_PORT", 
+          "value": 8080
         }
       ],
       "mountPoints": [
         {
           "sourceVolume": "publicUserFiles",
-          "containerPath": "/var/www/html/public/userfiles"
+          "containerPath": "/var/www/html/public/userfiles",
+          "readOnly": false
         },
         {
           "sourceVolume": "userFiles",
-          "containerPath": "/var/www/html/userfiles"
+          "containerPath": "/var/www/html/userfiles",
+          "readOnly": false
         },
         {
           "sourceVolume": "plugins",
-          "containerPath": "/var/www/html/Plugins"
+          "containerPath": "/var/www/html/Plugins",
+          "readOnly": false
         }
       ],
       "logConfiguration": {
