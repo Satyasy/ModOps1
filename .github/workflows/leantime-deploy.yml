@@ -2,7 +2,6 @@ name: Deploy Leantime App
 
 # FILL THE MISSING VALUES BELOW
 on:
-  workflow_dispatch:
   push:
     paths:
       - 'leantime/**'

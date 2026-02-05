@@ -2,7 +2,6 @@ name: Deploy Gatus App
 
 # FILL THE MISSING VALUES BELOW
 on:
-  workflow_dispatch:
   push:
     paths:
       - 'gatus/**'
@@ -60,6 +59,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          cd gatus
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
