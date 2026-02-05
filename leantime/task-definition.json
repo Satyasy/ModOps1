@@ -1,0 +1,130 @@
+{
+  "family": "lks-leantime-app",
+  "taskRoleArn": "arn:aws:iam::054802356914:role/LabRole",
+  "executionRoleArn": "arn:aws:iam::054802356914:role/LabRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "volumes": [
+   { 
+    "name": "publicUserFiles",
+    "efsVolumeConfiguration": {
+      "fileSystemId": "fs-071b5605f9a09996d",
+      "transitEncryption": "ENABLED",
+      "rootDirectory": "/",
+      "authorizationConfig": {
+        "accessPointId": "fsap-0114fb5162e5988a0",
+        "iam": "ENABLED"
+      }
+    }},
+    {
+      "name": "userFiles",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-071b5605f9a09996d",
+        "transitEncryption": "ENABLED",
+        "rootDirectory": "/",
+        "authorizationConfig": {
+          "accessPointId": "fsap-09a707a7529c8cbcd",
+          "iam":"ENABLED"
+        }
+      }
+    },
+    {
+      "name": "plugins",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-071b5605f9a09996d",
+        "transitEncryption": "ENABLED",
+        "rootDirectory": "/",
+        "authorizationConfig": {
+          "accessPointId": "fsap-07852730f7b93cab7",
+          "iam": "ENABLED"
+        }
+      }
+    }
+  ],
+
+  "placementConstraints": [],
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "enableFaultInjection": false,
+
+  "containerDefinitions": [
+    {
+      "name": "leantime",
+      "image": "leantime/leantime:latest",
+      "cpu": 0,
+      "essential": true,
+      "volumesFrom": [],
+      "systemControls": [],
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "secrets": [],
+      "environment": [
+        {
+          "name": "LEAN_SITENAME",
+          "value": "LKS Leantime"
+        },
+        {
+          "name": "LEAN_DEFAULT_TIMEZONE",
+          "value": "Asia/Jakarta"
+        },
+        {
+          "name": "LEAN_DB_HOST",
+          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/host"
+        },
+        {
+          "name": "LEAN_DB_PORT",
+          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/port"
+        },
+        {
+          "name": "LEAN_DB_DATABASE",
+          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/name"
+        },
+        {
+          "name": "LEAN_DB_USER",
+          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/username"
+        },
+        {
+          "name": "LEAN_DB_PASSWORD",
+          "value": "arn:aws:ssm:us-east-1:054802356914:parameter/lks/db/password"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "publicUserFiles",
+          "containerPath": "/var/www/html/public/userfiles"
+        },
+        {
+          "sourceVolume": "userFiles",
+          "containerPath": "/var/www/html/userfiles"
+        },
+        {
+          "sourceVolume": "plugins",
+          "containerPath": "/var/www/html/Plugins"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/lks/leantime-app",
+          "awslogs-region": "us-east-1",
+          "mode": "non-blocking",
+          "awslogs-create-group": "true",
+          "max-buffer-size": "25m",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
+
+
+
