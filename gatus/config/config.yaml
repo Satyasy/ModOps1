@@ -2,6 +2,7 @@
 alerting:
   github:
     token: "<github-token>"
+    repository-url: "https://github.com/Satyasy/ModOps1"
 
 endpoints:
   - name: Leantime
