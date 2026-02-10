@@ -1,6 +1,5 @@
-name: Deploy Gatus App
+name: Deploy App Based on Changes
 
-# FILL THE MISSING VALUES BELOW
 on:
   workflow_dispatch:
   push:
@@ -15,20 +14,44 @@ env:
   ECS_CLUSTER: lks-oss-cluster
   TOKEN: ${{ secrets.TOKEN }}
 
+  # GATUS CONFIG
   ECS_GATUS_SERVICE: gatus-service
   GATUS_TASK_DEFINITION: gatus/task-definition.json
   GATUS_URL: "http://${{ secrets.ALB_ENDPOINT }}:8080"
+  
+  # LEANTIME CONFIG
   ECS_LEANTIME_SERVICE: leantime-service
   LEANTIME_TASK_DEFINITION: leantime/task-definition.json
   LEANTIME_URL: "http://${{ secrets.ALB_ENDPOINT }}:80"
-# FILL THE MISSING VALUES ABOVE
 
 permissions:
   contents: read
 
 jobs:
+  # JOB 1: CHECK CHANGES
+  # Job ini mengecek folder mana yang berubah
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gatus: ${{ steps.filter.outputs.gatus }}
+      leantime: ${{ steps.filter.outputs.leantime }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gatus:
+              - 'gatus/**'
+            leantime:
+              - 'leantime/**'
+
+  # JOB 2: DEPLOY GATUS
+  # Hanya jalan jika folder 'gatus' berubah ATAU trigger manual
   deploy-gatus:
     name: Deploy Gatus App
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.gatus == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -52,7 +75,7 @@ jobs:
           sed -i "s|<github-token>|$TOKEN|g" gatus/config/config.yaml
           sed -i "s|<leantime-url>|$LEANTIME_URL|g" gatus/config/config.yaml
           sed -i "s|<gatus-url>|$GATUS_URL|g" gatus/config/config.yaml
-          echo "Cofiguration updated."
+          echo "Configuration updated."
           cat gatus/config/config.yaml
 
       - name: Get Short Commit Hash
@@ -84,31 +107,31 @@ jobs:
           service: ${{ env.ECS_GATUS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           force-new-deployment: true
-          run-task-tags: '[{"key": "", "value": ""} , ...]'
 
+  # JOB 3: DEPLOY LEANTIME
+  # Hanya jalan jika folder 'leantime' berubah ATAU trigger manual
   deploy-leantime:
-      name: Deploy Leantime App
-      runs-on: ubuntu-latest
-      environment: dev
-      steps:
+    name: Deploy Leantime App
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.leantime == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-            aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-            task-definition: ${{ env.LEANTIME_TASK_DEFINITION }}
-            service: ${{ env.ECS_LEANTIME_SERVICE }}
-            cluster: ${{ env.ECS_CLUSTER }}
-            force-new-deployment: true
-            run-task-tags: '[{"key": "", "value": ""} , ...]'
-
-
+          task-definition: ${{ env.LEANTIME_TASK_DEFINITION }}
+          service: ${{ env.ECS_LEANTIME_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          force-new-deployment: true
